@@ -1,14 +1,38 @@
 let EmployeePayrllDataList;
 
 window. addEventListener( 'DOMContentLoaded', (event) => {
-    EmployeePayrllDataList = getDataFromLocalStorage();
-    document.querySelector('.emp-count').textContent = EmployeePayrllDataList.length;
-    createInnerHtml();
-    localStorage.removeItem('editEmp');
+    if(site_properties.useLocalStorage.match("true")) {
+        EmployeePayrllDataList = getDataFromLocalStorage();
+    }
+    else {
+        getDataFromServer();
+    }
+
 });
 
 function getDataFromLocalStorage() {
-    return localStorage.getItem('EmployeePayrllDataList') ? JSON.parse(localStorage.getItem('EmployeePayrllDataList')) : [];
+    EmployeePayrllDataList =  localStorage.getItem('EmployeePayrllDataList') ? 
+                                JSON.parse(localStorage.getItem('EmployeePayrllDataList')) : [];
+    processEmployeePayrollDataResponse();
+}
+
+function getDataFromServer() {
+    makePromisecall("GET",site_properties.server_url, true)
+            .then(responseText => {
+                EmployeePayrllDataList = JSON.parse(responseText);
+                processEmployeePayrollDataResponse();
+            })
+            .catch(error => {
+                console.log("GET ERROR Status: "+error);
+                EmployeePayrllDataList= [];
+                processEmployeePayrollDataResponse();
+            })
+}
+
+function processEmployeePayrollDataResponse() {
+    document.querySelector('.emp-count').textContent = EmployeePayrllDataList.length;
+    createInnerHtml();
+    localStorage.removeItem('editEmp');
 }
 
 const createInnerHtml = () => {
