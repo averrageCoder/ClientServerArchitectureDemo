@@ -52,10 +52,15 @@ const save = (event) => {
     event.preventDefault();
     event.stopPropagation();
     try {
-        setEmployeePayrollObject();
-        createAndUpdateStorage();
-        resetForm();
-        window.location.replace(site_properties.homepage);
+        if(site_properties.useLocalStorage.match("true")) {
+            setEmployeePayrollObject();
+            createAndUpdateStorage();
+            resetForm();
+            window.location.replace(site_properties.homepage);
+        }
+        else {
+            createOrUpdateEmployeePayroll();
+        }
     }
     catch(e) {
         alert(e);
@@ -135,6 +140,23 @@ function createAndUpdateStorage() {
         EmployeePayrllDataList = [empPayrollObj];
     }
     localStorage.setItem("EmployeePayrllDataList", JSON.stringify(EmployeePayrllDataList));
+}
+
+function createOrUpdateEmployeePayroll() {
+    let postURL = site_properties.server_url;
+    let methodCall = "POST";
+    if(!isUpdate) {
+        methodCall = "PUT";
+        postURL = postURL + empPayrollObj.id.toString();
+    }
+    makePromisecall(methodCall,postUrl, true,empPayrollObj)
+                .then(responseText => {
+                    resetForm();
+                    window.location.replace(site_properties.homepage);
+                })
+                .catch(error => {
+                    throw error;
+                });
 }
 
 function createNewEmployeeID() {
