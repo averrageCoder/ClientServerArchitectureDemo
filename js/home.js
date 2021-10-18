@@ -117,7 +117,20 @@ const remove = (node) => {
                     .map(empData => empData.id)
                     .indexOf(employeeData.id);
     EmployeePayrllDataList.splice(index, 1);
-    localStorage.setItem('EmployeePayrllDataList',JSON.stringify(EmployeePayrllDataList));
-    document.querySelector('.emp-count').textContent = EmployeePayrllDataList.length;
-    createInnerHtml();
+    if(site_properties.useLocalStorage.match("true")) {
+        localStorage.setItem('EmployeePayrllDataList',JSON.stringify(EmployeePayrllDataList));
+        document.querySelector('.emp-count').textContent = EmployeePayrllDataList.length;
+        createInnerHtml();
+    }
+    else {
+        const deleteUrl = site_properties.server_url + employeeData.id.toString();
+        makePromisecall("DELETE",deleteUrl, true)
+                .then(responseText => {
+                    document.querySelector('.emp-count').textContent = EmployeePayrllDataList.length;
+                    createInnerHtml();
+                })
+                .catch(error => {
+                    console.log("Delete Error Status: "+JSON.stringify(error));
+                });
+    }
 }
